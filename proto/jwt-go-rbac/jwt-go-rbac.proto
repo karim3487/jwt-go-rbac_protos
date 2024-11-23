@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package auth;
 
-option go_package = "karimkabirov.jwt_go_rbac.v1;jwt_go_rbacv1";
+option go_package = "karim3487.jwt_go_rbac.v1;jwt_go_rbacv1";
 
 service Auth {
   rpc Register (RegisterRequest) returns (RegisterResponse);
