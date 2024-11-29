@@ -8,7 +8,7 @@ option go_package = "karim3487.jwt_go_rbac.v1;jwt_go_rbacv1";
 service Auth {
   rpc Register (RegisterRequest) returns (RegisterResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
-  rpc IsAdmin (IsAdminRequest) returns (IsAdminResponse);
+  rpc Authorize (AuthorizeRequest) returns (AuthorizeResponse);
 }
 
 message RegisterRequest {
@@ -29,33 +29,91 @@ message LoginResponse {
   string token = 1;
 }
 
-message IsAdminRequest {
+message AuthorizeRequest {
+  int64 user_id = 1;
+  string resource = 2;
+  string action = 3;
+}
+
+message AuthorizeResponse {
+  bool allowed = 1;
+}
+
+// UserInfo service
+service UserInfo {
+  rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+}
+
+message GetUsersRequest {}
+
+message GetUsersResponse {
+  repeated User users = 1;
+}
+
+message GetUserRequest {
   int64 user_id = 1;
 }
 
-message IsAdminResponse {
-  bool isAdmin = 1;
+message GetUserResponse {
+  User user = 1;
 }
 
-service Permissions {
-  rpc GetPermissions (GetPermissionsRequest) returns (GetPermissionsResponse);
-  rpc UpdatePermissions (UpdatePermissionsRequest) returns (UpdatePermissionsResponse);
-}
-
-message GetPermissionsRequest {
+message UpdateUserRequest {
   int64 user_id = 1;
+  string email = 2;
+  string password = 3;
+  repeated int64 roles = 4;
 }
 
-message GetPermissionsResponse {
-  repeated string permissions = 1;
+message UpdateUserResponse {
+  bool success = 1;
 }
 
-message UpdatePermissionsRequest {
-  int64 user_id = 1;
+
+// Role service
+service Roles {
+  rpc CreateRole (CreateRoleRequest) returns (CreateRoleResponse);
+  rpc GetRoles (GetRolesRequest) returns (GetRolesResponse);
+  rpc UpdateRole (UpdateRoleRequest) returns (UpdateRoleResponse);
+}
+
+message CreateRoleRequest {
+  string name = 1;
+  string description = 2;
+  repeated string permissions = 3;
+}
+
+message CreateRoleResponse {
+  int64 role_id = 1;
+}
+
+message GetRolesRequest {}
+
+message GetRolesResponse {
+  repeated Role roles = 1;
+}
+
+message UpdateRoleRequest {
+  int64 role_id = 1;
   repeated string add_permissions = 2;
   repeated string remove_permissions = 3;
 }
 
-message UpdatePermissionsResponse {
+message UpdateRoleResponse {
   bool success = 1;
+}
+
+// ---------- Common Messages ----------
+message User {
+  int64 id = 1; // User's unique ID.
+  string email = 2; // User's email.
+  repeated Role roles = 3; // Roles assigned to the user.
+}
+
+message Role {
+  int64 id = 1; // Role's unique ID.
+  string name = 2; // Role name.
+  repeated string permissions = 3; // Permissions assigned to the role.
 }

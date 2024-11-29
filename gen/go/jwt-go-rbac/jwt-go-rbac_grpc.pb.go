@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Auth_Register_FullMethodName = "/auth.Auth/Register"
-	Auth_Login_FullMethodName    = "/auth.Auth/Login"
-	Auth_IsAdmin_FullMethodName  = "/auth.Auth/IsAdmin"
+	Auth_Register_FullMethodName  = "/auth.Auth/Register"
+	Auth_Login_FullMethodName     = "/auth.Auth/Login"
+	Auth_Authorize_FullMethodName = "/auth.Auth/Authorize"
 )
 
 // AuthClient is the client API for Auth service.
@@ -32,7 +32,7 @@ const (
 type AuthClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	IsAdmin(ctx context.Context, in *IsAdminRequest, opts ...grpc.CallOption) (*IsAdminResponse, error)
+	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error)
 }
 
 type authClient struct {
@@ -63,10 +63,10 @@ func (c *authClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.C
 	return out, nil
 }
 
-func (c *authClient) IsAdmin(ctx context.Context, in *IsAdminRequest, opts ...grpc.CallOption) (*IsAdminResponse, error) {
+func (c *authClient) Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(IsAdminResponse)
-	err := c.cc.Invoke(ctx, Auth_IsAdmin_FullMethodName, in, out, cOpts...)
+	out := new(AuthorizeResponse)
+	err := c.cc.Invoke(ctx, Auth_Authorize_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (c *authClient) IsAdmin(ctx context.Context, in *IsAdminRequest, opts ...gr
 type AuthServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	IsAdmin(context.Context, *IsAdminRequest) (*IsAdminResponse, error)
+	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -98,8 +98,8 @@ func (UnimplementedAuthServer) Register(context.Context, *RegisterRequest) (*Reg
 func (UnimplementedAuthServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthServer) IsAdmin(context.Context, *IsAdminRequest) (*IsAdminResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IsAdmin not implemented")
+func (UnimplementedAuthServer) Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Authorize not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 func (UnimplementedAuthServer) testEmbeddedByValue()              {}
@@ -158,20 +158,20 @@ func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Auth_IsAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IsAdminRequest)
+func _Auth_Authorize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthorizeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).IsAdmin(ctx, in)
+		return srv.(AuthServer).Authorize(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_IsAdmin_FullMethodName,
+		FullMethod: Auth_Authorize_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).IsAdmin(ctx, req.(*IsAdminRequest))
+		return srv.(AuthServer).Authorize(ctx, req.(*AuthorizeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -192,8 +192,8 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Auth_Login_Handler,
 		},
 		{
-			MethodName: "IsAdmin",
-			Handler:    _Auth_IsAdmin_Handler,
+			MethodName: "Authorize",
+			Handler:    _Auth_Authorize_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -201,139 +201,363 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	Permissions_GetPermissions_FullMethodName    = "/auth.Permissions/GetPermissions"
-	Permissions_UpdatePermissions_FullMethodName = "/auth.Permissions/UpdatePermissions"
+	UserInfo_GetUsers_FullMethodName   = "/auth.UserInfo/GetUsers"
+	UserInfo_GetUser_FullMethodName    = "/auth.UserInfo/GetUser"
+	UserInfo_UpdateUser_FullMethodName = "/auth.UserInfo/UpdateUser"
 )
 
-// PermissionsClient is the client API for Permissions service.
+// UserInfoClient is the client API for UserInfo service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type PermissionsClient interface {
-	GetPermissions(ctx context.Context, in *GetPermissionsRequest, opts ...grpc.CallOption) (*GetPermissionsResponse, error)
-	UpdatePermissions(ctx context.Context, in *UpdatePermissionsRequest, opts ...grpc.CallOption) (*UpdatePermissionsResponse, error)
+//
+// UserInfo service
+type UserInfoClient interface {
+	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
+	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 }
 
-type permissionsClient struct {
+type userInfoClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewPermissionsClient(cc grpc.ClientConnInterface) PermissionsClient {
-	return &permissionsClient{cc}
+func NewUserInfoClient(cc grpc.ClientConnInterface) UserInfoClient {
+	return &userInfoClient{cc}
 }
 
-func (c *permissionsClient) GetPermissions(ctx context.Context, in *GetPermissionsRequest, opts ...grpc.CallOption) (*GetPermissionsResponse, error) {
+func (c *userInfoClient) GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetPermissionsResponse)
-	err := c.cc.Invoke(ctx, Permissions_GetPermissions_FullMethodName, in, out, cOpts...)
+	out := new(GetUsersResponse)
+	err := c.cc.Invoke(ctx, UserInfo_GetUsers_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *permissionsClient) UpdatePermissions(ctx context.Context, in *UpdatePermissionsRequest, opts ...grpc.CallOption) (*UpdatePermissionsResponse, error) {
+func (c *userInfoClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdatePermissionsResponse)
-	err := c.cc.Invoke(ctx, Permissions_UpdatePermissions_FullMethodName, in, out, cOpts...)
+	out := new(GetUserResponse)
+	err := c.cc.Invoke(ctx, UserInfo_GetUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// PermissionsServer is the server API for Permissions service.
-// All implementations must embed UnimplementedPermissionsServer
+func (c *userInfoClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateUserResponse)
+	err := c.cc.Invoke(ctx, UserInfo_UpdateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// UserInfoServer is the server API for UserInfo service.
+// All implementations must embed UnimplementedUserInfoServer
 // for forward compatibility.
-type PermissionsServer interface {
-	GetPermissions(context.Context, *GetPermissionsRequest) (*GetPermissionsResponse, error)
-	UpdatePermissions(context.Context, *UpdatePermissionsRequest) (*UpdatePermissionsResponse, error)
-	mustEmbedUnimplementedPermissionsServer()
+//
+// UserInfo service
+type UserInfoServer interface {
+	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
+	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
+	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
+	mustEmbedUnimplementedUserInfoServer()
 }
 
-// UnimplementedPermissionsServer must be embedded to have
+// UnimplementedUserInfoServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedPermissionsServer struct{}
+type UnimplementedUserInfoServer struct{}
 
-func (UnimplementedPermissionsServer) GetPermissions(context.Context, *GetPermissionsRequest) (*GetPermissionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPermissions not implemented")
+func (UnimplementedUserInfoServer) GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
 }
-func (UnimplementedPermissionsServer) UpdatePermissions(context.Context, *UpdatePermissionsRequest) (*UpdatePermissionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdatePermissions not implemented")
+func (UnimplementedUserInfoServer) GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
 }
-func (UnimplementedPermissionsServer) mustEmbedUnimplementedPermissionsServer() {}
-func (UnimplementedPermissionsServer) testEmbeddedByValue()                     {}
+func (UnimplementedUserInfoServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
+}
+func (UnimplementedUserInfoServer) mustEmbedUnimplementedUserInfoServer() {}
+func (UnimplementedUserInfoServer) testEmbeddedByValue()                  {}
 
-// UnsafePermissionsServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to PermissionsServer will
+// UnsafeUserInfoServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to UserInfoServer will
 // result in compilation errors.
-type UnsafePermissionsServer interface {
-	mustEmbedUnimplementedPermissionsServer()
+type UnsafeUserInfoServer interface {
+	mustEmbedUnimplementedUserInfoServer()
 }
 
-func RegisterPermissionsServer(s grpc.ServiceRegistrar, srv PermissionsServer) {
-	// If the following call pancis, it indicates UnimplementedPermissionsServer was
+func RegisterUserInfoServer(s grpc.ServiceRegistrar, srv UserInfoServer) {
+	// If the following call pancis, it indicates UnimplementedUserInfoServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&Permissions_ServiceDesc, srv)
+	s.RegisterService(&UserInfo_ServiceDesc, srv)
 }
 
-func _Permissions_GetPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPermissionsRequest)
+func _UserInfo_GetUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUsersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PermissionsServer).GetPermissions(ctx, in)
+		return srv.(UserInfoServer).GetUsers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Permissions_GetPermissions_FullMethodName,
+		FullMethod: UserInfo_GetUsers_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PermissionsServer).GetPermissions(ctx, req.(*GetPermissionsRequest))
+		return srv.(UserInfoServer).GetUsers(ctx, req.(*GetUsersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Permissions_UpdatePermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdatePermissionsRequest)
+func _UserInfo_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PermissionsServer).UpdatePermissions(ctx, in)
+		return srv.(UserInfoServer).GetUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Permissions_UpdatePermissions_FullMethodName,
+		FullMethod: UserInfo_GetUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PermissionsServer).UpdatePermissions(ctx, req.(*UpdatePermissionsRequest))
+		return srv.(UserInfoServer).GetUser(ctx, req.(*GetUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Permissions_ServiceDesc is the grpc.ServiceDesc for Permissions service.
+func _UserInfo_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserInfoServer).UpdateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserInfo_UpdateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserInfoServer).UpdateUser(ctx, req.(*UpdateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// UserInfo_ServiceDesc is the grpc.ServiceDesc for UserInfo service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Permissions_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "auth.Permissions",
-	HandlerType: (*PermissionsServer)(nil),
+var UserInfo_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "auth.UserInfo",
+	HandlerType: (*UserInfoServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetPermissions",
-			Handler:    _Permissions_GetPermissions_Handler,
+			MethodName: "GetUsers",
+			Handler:    _UserInfo_GetUsers_Handler,
 		},
 		{
-			MethodName: "UpdatePermissions",
-			Handler:    _Permissions_UpdatePermissions_Handler,
+			MethodName: "GetUser",
+			Handler:    _UserInfo_GetUser_Handler,
+		},
+		{
+			MethodName: "UpdateUser",
+			Handler:    _UserInfo_UpdateUser_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "jwt-go-rbac/jwt-go-rbac.proto",
+}
+
+const (
+	Roles_CreateRole_FullMethodName = "/auth.Roles/CreateRole"
+	Roles_GetRoles_FullMethodName   = "/auth.Roles/GetRoles"
+	Roles_UpdateRole_FullMethodName = "/auth.Roles/UpdateRole"
+)
+
+// RolesClient is the client API for Roles service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Role service
+type RolesClient interface {
+	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateRoleResponse, error)
+	GetRoles(ctx context.Context, in *GetRolesRequest, opts ...grpc.CallOption) (*GetRolesResponse, error)
+	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*UpdateRoleResponse, error)
+}
+
+type rolesClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewRolesClient(cc grpc.ClientConnInterface) RolesClient {
+	return &rolesClient{cc}
+}
+
+func (c *rolesClient) CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateRoleResponse)
+	err := c.cc.Invoke(ctx, Roles_CreateRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rolesClient) GetRoles(ctx context.Context, in *GetRolesRequest, opts ...grpc.CallOption) (*GetRolesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRolesResponse)
+	err := c.cc.Invoke(ctx, Roles_GetRoles_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rolesClient) UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*UpdateRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateRoleResponse)
+	err := c.cc.Invoke(ctx, Roles_UpdateRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// RolesServer is the server API for Roles service.
+// All implementations must embed UnimplementedRolesServer
+// for forward compatibility.
+//
+// Role service
+type RolesServer interface {
+	CreateRole(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error)
+	GetRoles(context.Context, *GetRolesRequest) (*GetRolesResponse, error)
+	UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error)
+	mustEmbedUnimplementedRolesServer()
+}
+
+// UnimplementedRolesServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedRolesServer struct{}
+
+func (UnimplementedRolesServer) CreateRole(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateRole not implemented")
+}
+func (UnimplementedRolesServer) GetRoles(context.Context, *GetRolesRequest) (*GetRolesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRoles not implemented")
+}
+func (UnimplementedRolesServer) UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRole not implemented")
+}
+func (UnimplementedRolesServer) mustEmbedUnimplementedRolesServer() {}
+func (UnimplementedRolesServer) testEmbeddedByValue()               {}
+
+// UnsafeRolesServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RolesServer will
+// result in compilation errors.
+type UnsafeRolesServer interface {
+	mustEmbedUnimplementedRolesServer()
+}
+
+func RegisterRolesServer(s grpc.ServiceRegistrar, srv RolesServer) {
+	// If the following call pancis, it indicates UnimplementedRolesServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&Roles_ServiceDesc, srv)
+}
+
+func _Roles_CreateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RolesServer).CreateRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Roles_CreateRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RolesServer).CreateRole(ctx, req.(*CreateRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Roles_GetRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRolesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RolesServer).GetRoles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Roles_GetRoles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RolesServer).GetRoles(ctx, req.(*GetRolesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Roles_UpdateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RolesServer).UpdateRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Roles_UpdateRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RolesServer).UpdateRole(ctx, req.(*UpdateRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Roles_ServiceDesc is the grpc.ServiceDesc for Roles service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Roles_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "auth.Roles",
+	HandlerType: (*RolesServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateRole",
+			Handler:    _Roles_CreateRole_Handler,
+		},
+		{
+			MethodName: "GetRoles",
+			Handler:    _Roles_GetRoles_Handler,
+		},
+		{
+			MethodName: "UpdateRole",
+			Handler:    _Roles_UpdateRole_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
