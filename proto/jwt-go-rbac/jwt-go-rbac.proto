@@ -4,6 +4,7 @@ package auth;
 
 option go_package = "karim3487.jwt_go_rbac.v1;jwt_go_rbacv1";
 
+// Auth service
 service Auth {
   rpc Register (RegisterRequest) returns (RegisterResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
@@ -34,4 +35,27 @@ message IsAdminRequest {
 
 message IsAdminResponse {
   bool isAdmin = 1;
+}
+
+service Permissions {
+  rpc GetPermissions (GetPermissionsRequest) returns (GetPermissionsResponse);
+  rpc UpdatePermissions (UpdatePermissionsRequest) returns (UpdatePermissionsResponse);
+}
+
+message GetPermissionsRequest {
+  int64 user_id = 1;
+}
+
+message GetPermissionsResponse {
+  repeated string permissions = 1;
+}
+
+message UpdatePermissionsRequest {
+  int64 user_id = 1;
+  repeated string add_permissions = 2;
+  repeated string remove_permissions = 3;
+}
+
+message UpdatePermissionsResponse {
+  bool success = 1;
 }
