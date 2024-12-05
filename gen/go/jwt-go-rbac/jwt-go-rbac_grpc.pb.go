@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,547 +20,888 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Auth_Register_FullMethodName  = "/auth.Auth/Register"
-	Auth_Login_FullMethodName     = "/auth.Auth/Login"
-	Auth_Authorize_FullMethodName = "/auth.Auth/Authorize"
+	AuthService_RegisterUser_FullMethodName             = "/auth.AuthService/RegisterUser"
+	AuthService_Login_FullMethodName                    = "/auth.AuthService/Login"
+	AuthService_UpdateUser_FullMethodName               = "/auth.AuthService/UpdateUser"
+	AuthService_GetUserInfo_FullMethodName              = "/auth.AuthService/GetUserInfo"
+	AuthService_GetAllUsers_FullMethodName              = "/auth.AuthService/GetAllUsers"
+	AuthService_CreateRole_FullMethodName               = "/auth.AuthService/CreateRole"
+	AuthService_UpdateRole_FullMethodName               = "/auth.AuthService/UpdateRole"
+	AuthService_DeleteRole_FullMethodName               = "/auth.AuthService/DeleteRole"
+	AuthService_GetAllRoles_FullMethodName              = "/auth.AuthService/GetAllRoles"
+	AuthService_AddRoleToUser_FullMethodName            = "/auth.AuthService/AddRoleToUser"
+	AuthService_RemoveRoleFromUser_FullMethodName       = "/auth.AuthService/RemoveRoleFromUser"
+	AuthService_GetRolesForUser_FullMethodName          = "/auth.AuthService/GetRolesForUser"
+	AuthService_GetRoleHierarchies_FullMethodName       = "/auth.AuthService/GetRoleHierarchies"
+	AuthService_CreatePermission_FullMethodName         = "/auth.AuthService/CreatePermission"
+	AuthService_UpdatePermission_FullMethodName         = "/auth.AuthService/UpdatePermission"
+	AuthService_DeletePermission_FullMethodName         = "/auth.AuthService/DeletePermission"
+	AuthService_GetAllPermissions_FullMethodName        = "/auth.AuthService/GetAllPermissions"
+	AuthService_AddPermissionToRole_FullMethodName      = "/auth.AuthService/AddPermissionToRole"
+	AuthService_RemovePermissionFromRole_FullMethodName = "/auth.AuthService/RemovePermissionFromRole"
+	AuthService_GetPermissionsForRole_FullMethodName    = "/auth.AuthService/GetPermissionsForRole"
+	AuthService_CheckPermissions_FullMethodName         = "/auth.AuthService/CheckPermissions"
 )
 
-// AuthClient is the client API for Auth service.
+// AuthServiceClient is the client API for AuthService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Auth service
-type AuthClient interface {
-	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+type AuthServiceClient interface {
+	// -------------------- USER MANAGEMENT -------------------------
+	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterOrUpdateUserResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error)
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*RegisterOrUpdateUserResponse, error)
+	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
+	GetAllUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetUserInfoResponse], error)
+	// -------------------- ROLE MANAGEMENT -------------------------
+	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateOrUpdateRoleResponse, error)
+	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*CreateOrUpdateRoleResponse, error)
+	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetAllRoles(ctx context.Context, in *GetAllRolesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Role], error)
+	AddRoleToUser(ctx context.Context, in *AddRoleToUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RemoveRoleFromUser(ctx context.Context, in *RemoveRoleFromUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetRolesForUser(ctx context.Context, in *GetRolesForUserRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Role], error)
+	GetRoleHierarchies(ctx context.Context, in *GetRoleHierarchiesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[RoleHierarchy], error)
+	// -------------------- PERMISSION MANAGEMENT -------------------
+	CreatePermission(ctx context.Context, in *CreatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error)
+	UpdatePermission(ctx context.Context, in *UpdatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error)
+	DeletePermission(ctx context.Context, in *DeletePermissionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetAllPermissions(ctx context.Context, in *GetAllPermissionsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Permission], error)
+	AddPermissionToRole(ctx context.Context, in *AddPermissionToRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RemovePermissionFromRole(ctx context.Context, in *RemovePermissionFromRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetPermissionsForRole(ctx context.Context, in *GetPermissionsForRoleRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Permission], error)
+	CheckPermissions(ctx context.Context, in *CheckPermissionsRequest, opts ...grpc.CallOption) (*CheckPermissionsResponse, error)
 }
 
-type authClient struct {
+type authServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewAuthClient(cc grpc.ClientConnInterface) AuthClient {
-	return &authClient{cc}
+func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
+	return &authServiceClient{cc}
 }
 
-func (c *authClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
+func (c *authServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterOrUpdateUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RegisterResponse)
-	err := c.cc.Invoke(ctx, Auth_Register_FullMethodName, in, out, cOpts...)
+	out := new(RegisterOrUpdateUserResponse)
+	err := c.cc.Invoke(ctx, AuthService_RegisterUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *authClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LoginResponse)
-	err := c.cc.Invoke(ctx, Auth_Login_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, AuthService_Login_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *authClient) Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error) {
+func (c *authServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*RegisterOrUpdateUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AuthorizeResponse)
-	err := c.cc.Invoke(ctx, Auth_Authorize_FullMethodName, in, out, cOpts...)
+	out := new(RegisterOrUpdateUserResponse)
+	err := c.cc.Invoke(ctx, AuthService_UpdateUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// AuthServer is the server API for Auth service.
-// All implementations must embed UnimplementedAuthServer
-// for forward compatibility.
-//
-// Auth service
-type AuthServer interface {
-	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
-	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
-	mustEmbedUnimplementedAuthServer()
+func (c *authServiceClient) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserInfoResponse)
+	err := c.cc.Invoke(ctx, AuthService_GetUserInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
-// UnimplementedAuthServer must be embedded to have
+func (c *authServiceClient) GetAllUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetUserInfoResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[0], AuthService_GetAllUsers_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[emptypb.Empty, GetUserInfoResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetAllUsersClient = grpc.ServerStreamingClient[GetUserInfoResponse]
+
+func (c *authServiceClient) CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateOrUpdateRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateOrUpdateRoleResponse)
+	err := c.cc.Invoke(ctx, AuthService_CreateRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*CreateOrUpdateRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateOrUpdateRoleResponse)
+	err := c.cc.Invoke(ctx, AuthService_UpdateRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthService_DeleteRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) GetAllRoles(ctx context.Context, in *GetAllRolesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Role], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[1], AuthService_GetAllRoles_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GetAllRolesRequest, Role]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetAllRolesClient = grpc.ServerStreamingClient[Role]
+
+func (c *authServiceClient) AddRoleToUser(ctx context.Context, in *AddRoleToUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthService_AddRoleToUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) RemoveRoleFromUser(ctx context.Context, in *RemoveRoleFromUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthService_RemoveRoleFromUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) GetRolesForUser(ctx context.Context, in *GetRolesForUserRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Role], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[2], AuthService_GetRolesForUser_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GetRolesForUserRequest, Role]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetRolesForUserClient = grpc.ServerStreamingClient[Role]
+
+func (c *authServiceClient) GetRoleHierarchies(ctx context.Context, in *GetRoleHierarchiesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[RoleHierarchy], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[3], AuthService_GetRoleHierarchies_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GetRoleHierarchiesRequest, RoleHierarchy]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetRoleHierarchiesClient = grpc.ServerStreamingClient[RoleHierarchy]
+
+func (c *authServiceClient) CreatePermission(ctx context.Context, in *CreatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateOrUpdatePermissionResponse)
+	err := c.cc.Invoke(ctx, AuthService_CreatePermission_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) UpdatePermission(ctx context.Context, in *UpdatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateOrUpdatePermissionResponse)
+	err := c.cc.Invoke(ctx, AuthService_UpdatePermission_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) DeletePermission(ctx context.Context, in *DeletePermissionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthService_DeletePermission_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) GetAllPermissions(ctx context.Context, in *GetAllPermissionsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Permission], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[4], AuthService_GetAllPermissions_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GetAllPermissionsRequest, Permission]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetAllPermissionsClient = grpc.ServerStreamingClient[Permission]
+
+func (c *authServiceClient) AddPermissionToRole(ctx context.Context, in *AddPermissionToRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthService_AddPermissionToRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) RemovePermissionFromRole(ctx context.Context, in *RemovePermissionFromRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthService_RemovePermissionFromRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) GetPermissionsForRole(ctx context.Context, in *GetPermissionsForRoleRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Permission], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[5], AuthService_GetPermissionsForRole_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GetPermissionsForRoleRequest, Permission]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetPermissionsForRoleClient = grpc.ServerStreamingClient[Permission]
+
+func (c *authServiceClient) CheckPermissions(ctx context.Context, in *CheckPermissionsRequest, opts ...grpc.CallOption) (*CheckPermissionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckPermissionsResponse)
+	err := c.cc.Invoke(ctx, AuthService_CheckPermissions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AuthServiceServer is the server API for AuthService service.
+// All implementations must embed UnimplementedAuthServiceServer
+// for forward compatibility.
+type AuthServiceServer interface {
+	// -------------------- USER MANAGEMENT -------------------------
+	RegisterUser(context.Context, *RegisterUserRequest) (*RegisterOrUpdateUserResponse, error)
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	UpdateUser(context.Context, *UpdateUserRequest) (*RegisterOrUpdateUserResponse, error)
+	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoResponse, error)
+	GetAllUsers(*emptypb.Empty, grpc.ServerStreamingServer[GetUserInfoResponse]) error
+	// -------------------- ROLE MANAGEMENT -------------------------
+	CreateRole(context.Context, *CreateRoleRequest) (*CreateOrUpdateRoleResponse, error)
+	UpdateRole(context.Context, *UpdateRoleRequest) (*CreateOrUpdateRoleResponse, error)
+	DeleteRole(context.Context, *DeleteRoleRequest) (*emptypb.Empty, error)
+	GetAllRoles(*GetAllRolesRequest, grpc.ServerStreamingServer[Role]) error
+	AddRoleToUser(context.Context, *AddRoleToUserRequest) (*emptypb.Empty, error)
+	RemoveRoleFromUser(context.Context, *RemoveRoleFromUserRequest) (*emptypb.Empty, error)
+	GetRolesForUser(*GetRolesForUserRequest, grpc.ServerStreamingServer[Role]) error
+	GetRoleHierarchies(*GetRoleHierarchiesRequest, grpc.ServerStreamingServer[RoleHierarchy]) error
+	// -------------------- PERMISSION MANAGEMENT -------------------
+	CreatePermission(context.Context, *CreatePermissionRequest) (*CreateOrUpdatePermissionResponse, error)
+	UpdatePermission(context.Context, *UpdatePermissionRequest) (*CreateOrUpdatePermissionResponse, error)
+	DeletePermission(context.Context, *DeletePermissionRequest) (*emptypb.Empty, error)
+	GetAllPermissions(*GetAllPermissionsRequest, grpc.ServerStreamingServer[Permission]) error
+	AddPermissionToRole(context.Context, *AddPermissionToRoleRequest) (*emptypb.Empty, error)
+	RemovePermissionFromRole(context.Context, *RemovePermissionFromRoleRequest) (*emptypb.Empty, error)
+	GetPermissionsForRole(*GetPermissionsForRoleRequest, grpc.ServerStreamingServer[Permission]) error
+	CheckPermissions(context.Context, *CheckPermissionsRequest) (*CheckPermissionsResponse, error)
+	mustEmbedUnimplementedAuthServiceServer()
+}
+
+// UnimplementedAuthServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedAuthServer struct{}
+type UnimplementedAuthServiceServer struct{}
 
-func (UnimplementedAuthServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+func (UnimplementedAuthServiceServer) RegisterUser(context.Context, *RegisterUserRequest) (*RegisterOrUpdateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
 }
-func (UnimplementedAuthServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthServer) Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Authorize not implemented")
+func (UnimplementedAuthServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*RegisterOrUpdateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
-func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
-func (UnimplementedAuthServer) testEmbeddedByValue()              {}
+func (UnimplementedAuthServiceServer) GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
+}
+func (UnimplementedAuthServiceServer) GetAllUsers(*emptypb.Empty, grpc.ServerStreamingServer[GetUserInfoResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method GetAllUsers not implemented")
+}
+func (UnimplementedAuthServiceServer) CreateRole(context.Context, *CreateRoleRequest) (*CreateOrUpdateRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateRole not implemented")
+}
+func (UnimplementedAuthServiceServer) UpdateRole(context.Context, *UpdateRoleRequest) (*CreateOrUpdateRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRole not implemented")
+}
+func (UnimplementedAuthServiceServer) DeleteRole(context.Context, *DeleteRoleRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRole not implemented")
+}
+func (UnimplementedAuthServiceServer) GetAllRoles(*GetAllRolesRequest, grpc.ServerStreamingServer[Role]) error {
+	return status.Errorf(codes.Unimplemented, "method GetAllRoles not implemented")
+}
+func (UnimplementedAuthServiceServer) AddRoleToUser(context.Context, *AddRoleToUserRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddRoleToUser not implemented")
+}
+func (UnimplementedAuthServiceServer) RemoveRoleFromUser(context.Context, *RemoveRoleFromUserRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveRoleFromUser not implemented")
+}
+func (UnimplementedAuthServiceServer) GetRolesForUser(*GetRolesForUserRequest, grpc.ServerStreamingServer[Role]) error {
+	return status.Errorf(codes.Unimplemented, "method GetRolesForUser not implemented")
+}
+func (UnimplementedAuthServiceServer) GetRoleHierarchies(*GetRoleHierarchiesRequest, grpc.ServerStreamingServer[RoleHierarchy]) error {
+	return status.Errorf(codes.Unimplemented, "method GetRoleHierarchies not implemented")
+}
+func (UnimplementedAuthServiceServer) CreatePermission(context.Context, *CreatePermissionRequest) (*CreateOrUpdatePermissionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePermission not implemented")
+}
+func (UnimplementedAuthServiceServer) UpdatePermission(context.Context, *UpdatePermissionRequest) (*CreateOrUpdatePermissionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePermission not implemented")
+}
+func (UnimplementedAuthServiceServer) DeletePermission(context.Context, *DeletePermissionRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePermission not implemented")
+}
+func (UnimplementedAuthServiceServer) GetAllPermissions(*GetAllPermissionsRequest, grpc.ServerStreamingServer[Permission]) error {
+	return status.Errorf(codes.Unimplemented, "method GetAllPermissions not implemented")
+}
+func (UnimplementedAuthServiceServer) AddPermissionToRole(context.Context, *AddPermissionToRoleRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddPermissionToRole not implemented")
+}
+func (UnimplementedAuthServiceServer) RemovePermissionFromRole(context.Context, *RemovePermissionFromRoleRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemovePermissionFromRole not implemented")
+}
+func (UnimplementedAuthServiceServer) GetPermissionsForRole(*GetPermissionsForRoleRequest, grpc.ServerStreamingServer[Permission]) error {
+	return status.Errorf(codes.Unimplemented, "method GetPermissionsForRole not implemented")
+}
+func (UnimplementedAuthServiceServer) CheckPermissions(context.Context, *CheckPermissionsRequest) (*CheckPermissionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckPermissions not implemented")
+}
+func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
+func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
 
-// UnsafeAuthServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to AuthServer will
+// UnsafeAuthServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuthServiceServer will
 // result in compilation errors.
-type UnsafeAuthServer interface {
-	mustEmbedUnimplementedAuthServer()
+type UnsafeAuthServiceServer interface {
+	mustEmbedUnimplementedAuthServiceServer()
 }
 
-func RegisterAuthServer(s grpc.ServiceRegistrar, srv AuthServer) {
-	// If the following call pancis, it indicates UnimplementedAuthServer was
+func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
+	// If the following call pancis, it indicates UnimplementedAuthServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&Auth_ServiceDesc, srv)
+	s.RegisterService(&AuthService_ServiceDesc, srv)
 }
 
-func _Auth_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterRequest)
+func _AuthService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).Register(ctx, in)
+		return srv.(AuthServiceServer).RegisterUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_Register_FullMethodName,
+		FullMethod: AuthService_RegisterUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).Register(ctx, req.(*RegisterRequest))
+		return srv.(AuthServiceServer).RegisterUser(ctx, req.(*RegisterUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).Login(ctx, in)
+		return srv.(AuthServiceServer).Login(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_Login_FullMethodName,
+		FullMethod: AuthService_Login_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).Login(ctx, req.(*LoginRequest))
+		return srv.(AuthServiceServer).Login(ctx, req.(*LoginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Auth_Authorize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuthorizeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthServer).Authorize(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Auth_Authorize_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).Authorize(ctx, req.(*AuthorizeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Auth_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "auth.Auth",
-	HandlerType: (*AuthServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Register",
-			Handler:    _Auth_Register_Handler,
-		},
-		{
-			MethodName: "Login",
-			Handler:    _Auth_Login_Handler,
-		},
-		{
-			MethodName: "Authorize",
-			Handler:    _Auth_Authorize_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "jwt-go-rbac/jwt-go-rbac.proto",
-}
-
-const (
-	UserInfo_GetUsers_FullMethodName   = "/auth.UserInfo/GetUsers"
-	UserInfo_GetUser_FullMethodName    = "/auth.UserInfo/GetUser"
-	UserInfo_UpdateUser_FullMethodName = "/auth.UserInfo/UpdateUser"
-)
-
-// UserInfoClient is the client API for UserInfo service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// UserInfo service
-type UserInfoClient interface {
-	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
-	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
-	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
-}
-
-type userInfoClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewUserInfoClient(cc grpc.ClientConnInterface) UserInfoClient {
-	return &userInfoClient{cc}
-}
-
-func (c *userInfoClient) GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUsersResponse)
-	err := c.cc.Invoke(ctx, UserInfo_GetUsers_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userInfoClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserResponse)
-	err := c.cc.Invoke(ctx, UserInfo_GetUser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userInfoClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateUserResponse)
-	err := c.cc.Invoke(ctx, UserInfo_UpdateUser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// UserInfoServer is the server API for UserInfo service.
-// All implementations must embed UnimplementedUserInfoServer
-// for forward compatibility.
-//
-// UserInfo service
-type UserInfoServer interface {
-	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
-	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
-	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
-	mustEmbedUnimplementedUserInfoServer()
-}
-
-// UnimplementedUserInfoServer must be embedded to have
-// forward compatible implementations.
-//
-// NOTE: this should be embedded by value instead of pointer to avoid a nil
-// pointer dereference when methods are called.
-type UnimplementedUserInfoServer struct{}
-
-func (UnimplementedUserInfoServer) GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
-}
-func (UnimplementedUserInfoServer) GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
-}
-func (UnimplementedUserInfoServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
-}
-func (UnimplementedUserInfoServer) mustEmbedUnimplementedUserInfoServer() {}
-func (UnimplementedUserInfoServer) testEmbeddedByValue()                  {}
-
-// UnsafeUserInfoServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to UserInfoServer will
-// result in compilation errors.
-type UnsafeUserInfoServer interface {
-	mustEmbedUnimplementedUserInfoServer()
-}
-
-func RegisterUserInfoServer(s grpc.ServiceRegistrar, srv UserInfoServer) {
-	// If the following call pancis, it indicates UnimplementedUserInfoServer was
-	// embedded by pointer and is nil.  This will cause panics if an
-	// unimplemented method is ever invoked, so we test this at initialization
-	// time to prevent it from happening at runtime later due to I/O.
-	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
-		t.testEmbeddedByValue()
-	}
-	s.RegisterService(&UserInfo_ServiceDesc, srv)
-}
-
-func _UserInfo_GetUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUsersRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserInfoServer).GetUsers(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserInfo_GetUsers_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserInfoServer).GetUsers(ctx, req.(*GetUsersRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserInfo_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserInfoServer).GetUser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserInfo_GetUser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserInfoServer).GetUser(ctx, req.(*GetUserRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserInfo_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuthService_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserInfoServer).UpdateUser(ctx, in)
+		return srv.(AuthServiceServer).UpdateUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserInfo_UpdateUser_FullMethodName,
+		FullMethod: AuthService_UpdateUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserInfoServer).UpdateUser(ctx, req.(*UpdateUserRequest))
+		return srv.(AuthServiceServer).UpdateUser(ctx, req.(*UpdateUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// UserInfo_ServiceDesc is the grpc.ServiceDesc for UserInfo service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var UserInfo_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "auth.UserInfo",
-	HandlerType: (*UserInfoServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "GetUsers",
-			Handler:    _UserInfo_GetUsers_Handler,
-		},
-		{
-			MethodName: "GetUser",
-			Handler:    _UserInfo_GetUser_Handler,
-		},
-		{
-			MethodName: "UpdateUser",
-			Handler:    _UserInfo_UpdateUser_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "jwt-go-rbac/jwt-go-rbac.proto",
-}
-
-const (
-	Roles_CreateRole_FullMethodName = "/auth.Roles/CreateRole"
-	Roles_GetRoles_FullMethodName   = "/auth.Roles/GetRoles"
-	Roles_UpdateRole_FullMethodName = "/auth.Roles/UpdateRole"
-)
-
-// RolesClient is the client API for Roles service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Role service
-type RolesClient interface {
-	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateRoleResponse, error)
-	GetRoles(ctx context.Context, in *GetRolesRequest, opts ...grpc.CallOption) (*GetRolesResponse, error)
-	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*UpdateRoleResponse, error)
-}
-
-type rolesClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewRolesClient(cc grpc.ClientConnInterface) RolesClient {
-	return &rolesClient{cc}
-}
-
-func (c *rolesClient) CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateRoleResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateRoleResponse)
-	err := c.cc.Invoke(ctx, Roles_CreateRole_FullMethodName, in, out, cOpts...)
-	if err != nil {
+func _AuthService_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserInfoRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return out, nil
-}
-
-func (c *rolesClient) GetRoles(ctx context.Context, in *GetRolesRequest, opts ...grpc.CallOption) (*GetRolesResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetRolesResponse)
-	err := c.cc.Invoke(ctx, Roles_GetRoles_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetUserInfo(ctx, in)
 	}
-	return out, nil
-}
-
-func (c *rolesClient) UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*UpdateRoleResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateRoleResponse)
-	err := c.cc.Invoke(ctx, Roles_UpdateRole_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetUserInfo_FullMethodName,
 	}
-	return out, nil
-}
-
-// RolesServer is the server API for Roles service.
-// All implementations must embed UnimplementedRolesServer
-// for forward compatibility.
-//
-// Role service
-type RolesServer interface {
-	CreateRole(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error)
-	GetRoles(context.Context, *GetRolesRequest) (*GetRolesResponse, error)
-	UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error)
-	mustEmbedUnimplementedRolesServer()
-}
-
-// UnimplementedRolesServer must be embedded to have
-// forward compatible implementations.
-//
-// NOTE: this should be embedded by value instead of pointer to avoid a nil
-// pointer dereference when methods are called.
-type UnimplementedRolesServer struct{}
-
-func (UnimplementedRolesServer) CreateRole(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateRole not implemented")
-}
-func (UnimplementedRolesServer) GetRoles(context.Context, *GetRolesRequest) (*GetRolesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRoles not implemented")
-}
-func (UnimplementedRolesServer) UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateRole not implemented")
-}
-func (UnimplementedRolesServer) mustEmbedUnimplementedRolesServer() {}
-func (UnimplementedRolesServer) testEmbeddedByValue()               {}
-
-// UnsafeRolesServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to RolesServer will
-// result in compilation errors.
-type UnsafeRolesServer interface {
-	mustEmbedUnimplementedRolesServer()
-}
-
-func RegisterRolesServer(s grpc.ServiceRegistrar, srv RolesServer) {
-	// If the following call pancis, it indicates UnimplementedRolesServer was
-	// embedded by pointer and is nil.  This will cause panics if an
-	// unimplemented method is ever invoked, so we test this at initialization
-	// time to prevent it from happening at runtime later due to I/O.
-	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
-		t.testEmbeddedByValue()
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetUserInfo(ctx, req.(*GetUserInfoRequest))
 	}
-	s.RegisterService(&Roles_ServiceDesc, srv)
+	return interceptor(ctx, in, info, handler)
 }
 
-func _Roles_CreateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuthService_GetAllUsers_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(emptypb.Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AuthServiceServer).GetAllUsers(m, &grpc.GenericServerStream[emptypb.Empty, GetUserInfoResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetAllUsersServer = grpc.ServerStreamingServer[GetUserInfoResponse]
+
+func _AuthService_CreateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateRoleRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RolesServer).CreateRole(ctx, in)
+		return srv.(AuthServiceServer).CreateRole(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Roles_CreateRole_FullMethodName,
+		FullMethod: AuthService_CreateRole_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RolesServer).CreateRole(ctx, req.(*CreateRoleRequest))
+		return srv.(AuthServiceServer).CreateRole(ctx, req.(*CreateRoleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Roles_GetRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRolesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RolesServer).GetRoles(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Roles_GetRoles_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RolesServer).GetRoles(ctx, req.(*GetRolesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Roles_UpdateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuthService_UpdateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateRoleRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RolesServer).UpdateRole(ctx, in)
+		return srv.(AuthServiceServer).UpdateRole(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Roles_UpdateRole_FullMethodName,
+		FullMethod: AuthService_UpdateRole_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RolesServer).UpdateRole(ctx, req.(*UpdateRoleRequest))
+		return srv.(AuthServiceServer).UpdateRole(ctx, req.(*UpdateRoleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Roles_ServiceDesc is the grpc.ServiceDesc for Roles service.
+func _AuthService_DeleteRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).DeleteRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_DeleteRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).DeleteRole(ctx, req.(*DeleteRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_GetAllRoles_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetAllRolesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AuthServiceServer).GetAllRoles(m, &grpc.GenericServerStream[GetAllRolesRequest, Role]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetAllRolesServer = grpc.ServerStreamingServer[Role]
+
+func _AuthService_AddRoleToUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddRoleToUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).AddRoleToUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_AddRoleToUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).AddRoleToUser(ctx, req.(*AddRoleToUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_RemoveRoleFromUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveRoleFromUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RemoveRoleFromUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_RemoveRoleFromUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RemoveRoleFromUser(ctx, req.(*RemoveRoleFromUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_GetRolesForUser_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetRolesForUserRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AuthServiceServer).GetRolesForUser(m, &grpc.GenericServerStream[GetRolesForUserRequest, Role]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetRolesForUserServer = grpc.ServerStreamingServer[Role]
+
+func _AuthService_GetRoleHierarchies_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetRoleHierarchiesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AuthServiceServer).GetRoleHierarchies(m, &grpc.GenericServerStream[GetRoleHierarchiesRequest, RoleHierarchy]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetRoleHierarchiesServer = grpc.ServerStreamingServer[RoleHierarchy]
+
+func _AuthService_CreatePermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePermissionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).CreatePermission(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_CreatePermission_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).CreatePermission(ctx, req.(*CreatePermissionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_UpdatePermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePermissionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).UpdatePermission(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_UpdatePermission_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).UpdatePermission(ctx, req.(*UpdatePermissionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_DeletePermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePermissionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).DeletePermission(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_DeletePermission_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).DeletePermission(ctx, req.(*DeletePermissionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_GetAllPermissions_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetAllPermissionsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AuthServiceServer).GetAllPermissions(m, &grpc.GenericServerStream[GetAllPermissionsRequest, Permission]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetAllPermissionsServer = grpc.ServerStreamingServer[Permission]
+
+func _AuthService_AddPermissionToRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddPermissionToRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).AddPermissionToRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_AddPermissionToRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).AddPermissionToRole(ctx, req.(*AddPermissionToRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_RemovePermissionFromRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemovePermissionFromRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RemovePermissionFromRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_RemovePermissionFromRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RemovePermissionFromRole(ctx, req.(*RemovePermissionFromRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_GetPermissionsForRole_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetPermissionsForRoleRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AuthServiceServer).GetPermissionsForRole(m, &grpc.GenericServerStream[GetPermissionsForRoleRequest, Permission]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AuthService_GetPermissionsForRoleServer = grpc.ServerStreamingServer[Permission]
+
+func _AuthService_CheckPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).CheckPermissions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_CheckPermissions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).CheckPermissions(ctx, req.(*CheckPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Roles_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "auth.Roles",
-	HandlerType: (*RolesServer)(nil),
+var AuthService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "auth.AuthService",
+	HandlerType: (*AuthServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateRole",
-			Handler:    _Roles_CreateRole_Handler,
+			MethodName: "RegisterUser",
+			Handler:    _AuthService_RegisterUser_Handler,
 		},
 		{
-			MethodName: "GetRoles",
-			Handler:    _Roles_GetRoles_Handler,
+			MethodName: "Login",
+			Handler:    _AuthService_Login_Handler,
+		},
+		{
+			MethodName: "UpdateUser",
+			Handler:    _AuthService_UpdateUser_Handler,
+		},
+		{
+			MethodName: "GetUserInfo",
+			Handler:    _AuthService_GetUserInfo_Handler,
+		},
+		{
+			MethodName: "CreateRole",
+			Handler:    _AuthService_CreateRole_Handler,
 		},
 		{
 			MethodName: "UpdateRole",
-			Handler:    _Roles_UpdateRole_Handler,
+			Handler:    _AuthService_UpdateRole_Handler,
+		},
+		{
+			MethodName: "DeleteRole",
+			Handler:    _AuthService_DeleteRole_Handler,
+		},
+		{
+			MethodName: "AddRoleToUser",
+			Handler:    _AuthService_AddRoleToUser_Handler,
+		},
+		{
+			MethodName: "RemoveRoleFromUser",
+			Handler:    _AuthService_RemoveRoleFromUser_Handler,
+		},
+		{
+			MethodName: "CreatePermission",
+			Handler:    _AuthService_CreatePermission_Handler,
+		},
+		{
+			MethodName: "UpdatePermission",
+			Handler:    _AuthService_UpdatePermission_Handler,
+		},
+		{
+			MethodName: "DeletePermission",
+			Handler:    _AuthService_DeletePermission_Handler,
+		},
+		{
+			MethodName: "AddPermissionToRole",
+			Handler:    _AuthService_AddPermissionToRole_Handler,
+		},
+		{
+			MethodName: "RemovePermissionFromRole",
+			Handler:    _AuthService_RemovePermissionFromRole_Handler,
+		},
+		{
+			MethodName: "CheckPermissions",
+			Handler:    _AuthService_CheckPermissions_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetAllUsers",
+			Handler:       _AuthService_GetAllUsers_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetAllRoles",
+			Handler:       _AuthService_GetAllRoles_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetRolesForUser",
+			Handler:       _AuthService_GetRolesForUser_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetRoleHierarchies",
+			Handler:       _AuthService_GetRoleHierarchies_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetAllPermissions",
+			Handler:       _AuthService_GetAllPermissions_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetPermissionsForRole",
+			Handler:       _AuthService_GetPermissionsForRole_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "jwt-go-rbac/jwt-go-rbac.proto",
 }
