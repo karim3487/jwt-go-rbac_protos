@@ -18,6 +18,10 @@ message Role {
   google.protobuf.Timestamp created_at = 4; // Creation date of the role
 }
 
+message RoleList {
+  repeated Role roles = 1;
+}
+
 // Represents a user in the system
 message User {
   int64 id = 1;                     // Unique identifier for the user
@@ -36,6 +40,10 @@ message RoleHierarchy {
   int64 id = 1;                     // Unique identifier for the hierarchy
   Role parent_role = 2;             // Parent role in the hierarchy
   Role child_role = 3;              // Child role in the hierarchy
+}
+
+message RoleHierarchyList {
+  repeated RoleHierarchy rolesHierarchy = 1;
 }
 
 // Represents a permission in the system
@@ -63,10 +71,6 @@ message RegisterUserRequest {
   string last_name = 5;
 }
 
-message RegisterOrUpdateUserResponse {
-  User user = 1; // User details
-}
-
 message LoginRequest {
   string username = 1; // Username
   string password = 2; // Password
@@ -90,7 +94,7 @@ message GetUserInfoRequest {
   int64 user_id = 1;
 }
 
-message GetUserInfoResponse {
+message UserInfo {
   int64 id = 1;
   string username = 2;
   string email = 3;
@@ -99,8 +103,12 @@ message GetUserInfoResponse {
   bool is_active = 6;
 }
 
+message UserInfoList {
+    repeated UserInfo usersInfo = 1;
+}
+
 message DeleteUserRequest {
-  int64 id = 1; // Идентификатор пользователя
+  int64 id = 1;
 }
 
 // Requests and responses for role management
@@ -110,7 +118,7 @@ message CreateRoleRequest {
 }
 
 message CreateOrUpdateRoleResponse {
-  int64 role_id = 1;
+  Role role = 1;
 }
 
 message UpdateRoleRequest {
@@ -150,7 +158,7 @@ message CreatePermissionRequest {
 }
 
 message CreateOrUpdatePermissionResponse {
-  int64 permission_id = 1;
+  Permission permission = 1;
 }
 
 message UpdatePermissionRequest {
@@ -179,6 +187,10 @@ message GetPermissionsForRoleRequest {
   int64 role_id = 1;
 }
 
+message PermissionList {
+  repeated Permission permissions = 1;
+}
+
 message CheckPermissionsRequest {
   int64 user_id = 1;
   string permission = 2;
@@ -192,12 +204,12 @@ message CheckPermissionsResponse {
 
 service AuthService {
   // -------------------- USER MANAGEMENT -------------------------
-  rpc CreateUser(RegisterUserRequest) returns (GetUserInfoResponse);
-  rpc RegisterUser(RegisterUserRequest) returns (GetUserInfoResponse);
+  rpc CreateUser(RegisterUserRequest) returns (UserInfo);
+  rpc RegisterUser(RegisterUserRequest) returns (UserInfo);
   rpc Login(LoginRequest) returns (LoginResponse);
-  rpc UpdateUser(UpdateUserRequest) returns (GetUserInfoResponse);
-  rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse);
-  rpc GetAllUsers(google.protobuf.Empty) returns (stream GetUserInfoResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (UserInfo);
+  rpc GetUserInfo(GetUserInfoRequest) returns (UserInfo);
+  rpc GetAllUsers(google.protobuf.Empty) returns (UserInfoList);
   rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
 
   // -------------------- ROLE MANAGEMENT -------------------------
@@ -205,21 +217,21 @@ service AuthService {
   rpc UpdateRole(UpdateRoleRequest) returns (CreateOrUpdateRoleResponse);
   rpc DeleteRole(DeleteRoleRequest) returns (google.protobuf.Empty);
 
-  rpc GetAllRoles(GetAllRolesRequest) returns (stream Role);
+  rpc GetAllRoles(GetAllRolesRequest) returns (RoleList);
   rpc AddRoleToUser(AddRoleToUserRequest) returns (google.protobuf.Empty);
   rpc RemoveRoleFromUser(RemoveRoleFromUserRequest) returns (google.protobuf.Empty);
-  rpc GetRolesForUser(GetRolesForUserRequest) returns (stream Role);
-  rpc GetRoleHierarchies(GetRoleHierarchiesRequest) returns (stream RoleHierarchy);
+  rpc GetRolesForUser(GetRolesForUserRequest) returns (RoleList);
+  rpc GetRoleHierarchies(GetRoleHierarchiesRequest) returns (RoleHierarchyList);
 
   // -------------------- PERMISSION MANAGEMENT -------------------
   rpc CreatePermission(CreatePermissionRequest) returns (CreateOrUpdatePermissionResponse);
   rpc UpdatePermission(UpdatePermissionRequest) returns (CreateOrUpdatePermissionResponse);
   rpc DeletePermission(DeletePermissionRequest) returns (google.protobuf.Empty);
 
-  rpc GetAllPermissions(GetAllPermissionsRequest) returns (stream Permission);
+  rpc GetAllPermissions(GetAllPermissionsRequest) returns (PermissionList);
   rpc AddPermissionToRole(AddPermissionToRoleRequest) returns (google.protobuf.Empty);
   rpc RemovePermissionFromRole(RemovePermissionFromRoleRequest) returns (google.protobuf.Empty);
-  rpc GetPermissionsForRole(GetPermissionsForRoleRequest) returns (stream Permission);
+  rpc GetPermissionsForRole(GetPermissionsForRoleRequest) returns (PermissionList);
 
   rpc CheckPermissions(CheckPermissionsRequest) returns (CheckPermissionsResponse);
 }

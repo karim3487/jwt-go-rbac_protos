@@ -50,30 +50,30 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
 	// -------------------- USER MANAGEMENT -------------------------
-	CreateUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
-	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
+	CreateUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*UserInfo, error)
+	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*UserInfo, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
-	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
-	GetAllUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetUserInfoResponse], error)
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserInfo, error)
+	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*UserInfo, error)
+	GetAllUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserInfoList, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// -------------------- ROLE MANAGEMENT -------------------------
 	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateOrUpdateRoleResponse, error)
 	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*CreateOrUpdateRoleResponse, error)
 	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetAllRoles(ctx context.Context, in *GetAllRolesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Role], error)
+	GetAllRoles(ctx context.Context, in *GetAllRolesRequest, opts ...grpc.CallOption) (*RoleList, error)
 	AddRoleToUser(ctx context.Context, in *AddRoleToUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RemoveRoleFromUser(ctx context.Context, in *RemoveRoleFromUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetRolesForUser(ctx context.Context, in *GetRolesForUserRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Role], error)
-	GetRoleHierarchies(ctx context.Context, in *GetRoleHierarchiesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[RoleHierarchy], error)
+	GetRolesForUser(ctx context.Context, in *GetRolesForUserRequest, opts ...grpc.CallOption) (*RoleList, error)
+	GetRoleHierarchies(ctx context.Context, in *GetRoleHierarchiesRequest, opts ...grpc.CallOption) (*RoleHierarchyList, error)
 	// -------------------- PERMISSION MANAGEMENT -------------------
 	CreatePermission(ctx context.Context, in *CreatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error)
 	UpdatePermission(ctx context.Context, in *UpdatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error)
 	DeletePermission(ctx context.Context, in *DeletePermissionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetAllPermissions(ctx context.Context, in *GetAllPermissionsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Permission], error)
+	GetAllPermissions(ctx context.Context, in *GetAllPermissionsRequest, opts ...grpc.CallOption) (*PermissionList, error)
 	AddPermissionToRole(ctx context.Context, in *AddPermissionToRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RemovePermissionFromRole(ctx context.Context, in *RemovePermissionFromRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetPermissionsForRole(ctx context.Context, in *GetPermissionsForRoleRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Permission], error)
+	GetPermissionsForRole(ctx context.Context, in *GetPermissionsForRoleRequest, opts ...grpc.CallOption) (*PermissionList, error)
 	CheckPermissions(ctx context.Context, in *CheckPermissionsRequest, opts ...grpc.CallOption) (*CheckPermissionsResponse, error)
 }
 
@@ -85,9 +85,9 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) CreateUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
+func (c *authServiceClient) CreateUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*UserInfo, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserInfoResponse)
+	out := new(UserInfo)
 	err := c.cc.Invoke(ctx, AuthService_CreateUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -95,9 +95,9 @@ func (c *authServiceClient) CreateUser(ctx context.Context, in *RegisterUserRequ
 	return out, nil
 }
 
-func (c *authServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
+func (c *authServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*UserInfo, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserInfoResponse)
+	out := new(UserInfo)
 	err := c.cc.Invoke(ctx, AuthService_RegisterUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -115,9 +115,9 @@ func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 	return out, nil
 }
 
-func (c *authServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
+func (c *authServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserInfo, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserInfoResponse)
+	out := new(UserInfo)
 	err := c.cc.Invoke(ctx, AuthService_UpdateUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -125,9 +125,9 @@ func (c *authServiceClient) UpdateUser(ctx context.Context, in *UpdateUserReques
 	return out, nil
 }
 
-func (c *authServiceClient) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
+func (c *authServiceClient) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*UserInfo, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserInfoResponse)
+	out := new(UserInfo)
 	err := c.cc.Invoke(ctx, AuthService_GetUserInfo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -135,24 +135,15 @@ func (c *authServiceClient) GetUserInfo(ctx context.Context, in *GetUserInfoRequ
 	return out, nil
 }
 
-func (c *authServiceClient) GetAllUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetUserInfoResponse], error) {
+func (c *authServiceClient) GetAllUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserInfoList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[0], AuthService_GetAllUsers_FullMethodName, cOpts...)
+	out := new(UserInfoList)
+	err := c.cc.Invoke(ctx, AuthService_GetAllUsers_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[emptypb.Empty, GetUserInfoResponse]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetAllUsersClient = grpc.ServerStreamingClient[GetUserInfoResponse]
 
 func (c *authServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -194,24 +185,15 @@ func (c *authServiceClient) DeleteRole(ctx context.Context, in *DeleteRoleReques
 	return out, nil
 }
 
-func (c *authServiceClient) GetAllRoles(ctx context.Context, in *GetAllRolesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Role], error) {
+func (c *authServiceClient) GetAllRoles(ctx context.Context, in *GetAllRolesRequest, opts ...grpc.CallOption) (*RoleList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[1], AuthService_GetAllRoles_FullMethodName, cOpts...)
+	out := new(RoleList)
+	err := c.cc.Invoke(ctx, AuthService_GetAllRoles_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[GetAllRolesRequest, Role]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetAllRolesClient = grpc.ServerStreamingClient[Role]
 
 func (c *authServiceClient) AddRoleToUser(ctx context.Context, in *AddRoleToUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -233,43 +215,25 @@ func (c *authServiceClient) RemoveRoleFromUser(ctx context.Context, in *RemoveRo
 	return out, nil
 }
 
-func (c *authServiceClient) GetRolesForUser(ctx context.Context, in *GetRolesForUserRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Role], error) {
+func (c *authServiceClient) GetRolesForUser(ctx context.Context, in *GetRolesForUserRequest, opts ...grpc.CallOption) (*RoleList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[2], AuthService_GetRolesForUser_FullMethodName, cOpts...)
+	out := new(RoleList)
+	err := c.cc.Invoke(ctx, AuthService_GetRolesForUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[GetRolesForUserRequest, Role]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetRolesForUserClient = grpc.ServerStreamingClient[Role]
-
-func (c *authServiceClient) GetRoleHierarchies(ctx context.Context, in *GetRoleHierarchiesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[RoleHierarchy], error) {
+func (c *authServiceClient) GetRoleHierarchies(ctx context.Context, in *GetRoleHierarchiesRequest, opts ...grpc.CallOption) (*RoleHierarchyList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[3], AuthService_GetRoleHierarchies_FullMethodName, cOpts...)
+	out := new(RoleHierarchyList)
+	err := c.cc.Invoke(ctx, AuthService_GetRoleHierarchies_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[GetRoleHierarchiesRequest, RoleHierarchy]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetRoleHierarchiesClient = grpc.ServerStreamingClient[RoleHierarchy]
 
 func (c *authServiceClient) CreatePermission(ctx context.Context, in *CreatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -301,24 +265,15 @@ func (c *authServiceClient) DeletePermission(ctx context.Context, in *DeletePerm
 	return out, nil
 }
 
-func (c *authServiceClient) GetAllPermissions(ctx context.Context, in *GetAllPermissionsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Permission], error) {
+func (c *authServiceClient) GetAllPermissions(ctx context.Context, in *GetAllPermissionsRequest, opts ...grpc.CallOption) (*PermissionList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[4], AuthService_GetAllPermissions_FullMethodName, cOpts...)
+	out := new(PermissionList)
+	err := c.cc.Invoke(ctx, AuthService_GetAllPermissions_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[GetAllPermissionsRequest, Permission]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetAllPermissionsClient = grpc.ServerStreamingClient[Permission]
 
 func (c *authServiceClient) AddPermissionToRole(ctx context.Context, in *AddPermissionToRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -340,24 +295,15 @@ func (c *authServiceClient) RemovePermissionFromRole(ctx context.Context, in *Re
 	return out, nil
 }
 
-func (c *authServiceClient) GetPermissionsForRole(ctx context.Context, in *GetPermissionsForRoleRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Permission], error) {
+func (c *authServiceClient) GetPermissionsForRole(ctx context.Context, in *GetPermissionsForRoleRequest, opts ...grpc.CallOption) (*PermissionList, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AuthService_ServiceDesc.Streams[5], AuthService_GetPermissionsForRole_FullMethodName, cOpts...)
+	out := new(PermissionList)
+	err := c.cc.Invoke(ctx, AuthService_GetPermissionsForRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[GetPermissionsForRoleRequest, Permission]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetPermissionsForRoleClient = grpc.ServerStreamingClient[Permission]
 
 func (c *authServiceClient) CheckPermissions(ctx context.Context, in *CheckPermissionsRequest, opts ...grpc.CallOption) (*CheckPermissionsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -374,30 +320,30 @@ func (c *authServiceClient) CheckPermissions(ctx context.Context, in *CheckPermi
 // for forward compatibility.
 type AuthServiceServer interface {
 	// -------------------- USER MANAGEMENT -------------------------
-	CreateUser(context.Context, *RegisterUserRequest) (*GetUserInfoResponse, error)
-	RegisterUser(context.Context, *RegisterUserRequest) (*GetUserInfoResponse, error)
+	CreateUser(context.Context, *RegisterUserRequest) (*UserInfo, error)
+	RegisterUser(context.Context, *RegisterUserRequest) (*UserInfo, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	UpdateUser(context.Context, *UpdateUserRequest) (*GetUserInfoResponse, error)
-	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoResponse, error)
-	GetAllUsers(*emptypb.Empty, grpc.ServerStreamingServer[GetUserInfoResponse]) error
+	UpdateUser(context.Context, *UpdateUserRequest) (*UserInfo, error)
+	GetUserInfo(context.Context, *GetUserInfoRequest) (*UserInfo, error)
+	GetAllUsers(context.Context, *emptypb.Empty) (*UserInfoList, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
 	// -------------------- ROLE MANAGEMENT -------------------------
 	CreateRole(context.Context, *CreateRoleRequest) (*CreateOrUpdateRoleResponse, error)
 	UpdateRole(context.Context, *UpdateRoleRequest) (*CreateOrUpdateRoleResponse, error)
 	DeleteRole(context.Context, *DeleteRoleRequest) (*emptypb.Empty, error)
-	GetAllRoles(*GetAllRolesRequest, grpc.ServerStreamingServer[Role]) error
+	GetAllRoles(context.Context, *GetAllRolesRequest) (*RoleList, error)
 	AddRoleToUser(context.Context, *AddRoleToUserRequest) (*emptypb.Empty, error)
 	RemoveRoleFromUser(context.Context, *RemoveRoleFromUserRequest) (*emptypb.Empty, error)
-	GetRolesForUser(*GetRolesForUserRequest, grpc.ServerStreamingServer[Role]) error
-	GetRoleHierarchies(*GetRoleHierarchiesRequest, grpc.ServerStreamingServer[RoleHierarchy]) error
+	GetRolesForUser(context.Context, *GetRolesForUserRequest) (*RoleList, error)
+	GetRoleHierarchies(context.Context, *GetRoleHierarchiesRequest) (*RoleHierarchyList, error)
 	// -------------------- PERMISSION MANAGEMENT -------------------
 	CreatePermission(context.Context, *CreatePermissionRequest) (*CreateOrUpdatePermissionResponse, error)
 	UpdatePermission(context.Context, *UpdatePermissionRequest) (*CreateOrUpdatePermissionResponse, error)
 	DeletePermission(context.Context, *DeletePermissionRequest) (*emptypb.Empty, error)
-	GetAllPermissions(*GetAllPermissionsRequest, grpc.ServerStreamingServer[Permission]) error
+	GetAllPermissions(context.Context, *GetAllPermissionsRequest) (*PermissionList, error)
 	AddPermissionToRole(context.Context, *AddPermissionToRoleRequest) (*emptypb.Empty, error)
 	RemovePermissionFromRole(context.Context, *RemovePermissionFromRoleRequest) (*emptypb.Empty, error)
-	GetPermissionsForRole(*GetPermissionsForRoleRequest, grpc.ServerStreamingServer[Permission]) error
+	GetPermissionsForRole(context.Context, *GetPermissionsForRoleRequest) (*PermissionList, error)
 	CheckPermissions(context.Context, *CheckPermissionsRequest) (*CheckPermissionsResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
@@ -409,23 +355,23 @@ type AuthServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAuthServiceServer struct{}
 
-func (UnimplementedAuthServiceServer) CreateUser(context.Context, *RegisterUserRequest) (*GetUserInfoResponse, error) {
+func (UnimplementedAuthServiceServer) CreateUser(context.Context, *RegisterUserRequest) (*UserInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
-func (UnimplementedAuthServiceServer) RegisterUser(context.Context, *RegisterUserRequest) (*GetUserInfoResponse, error) {
+func (UnimplementedAuthServiceServer) RegisterUser(context.Context, *RegisterUserRequest) (*UserInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
 }
 func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*GetUserInfoResponse, error) {
+func (UnimplementedAuthServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UserInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
-func (UnimplementedAuthServiceServer) GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoResponse, error) {
+func (UnimplementedAuthServiceServer) GetUserInfo(context.Context, *GetUserInfoRequest) (*UserInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
 }
-func (UnimplementedAuthServiceServer) GetAllUsers(*emptypb.Empty, grpc.ServerStreamingServer[GetUserInfoResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method GetAllUsers not implemented")
+func (UnimplementedAuthServiceServer) GetAllUsers(context.Context, *emptypb.Empty) (*UserInfoList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllUsers not implemented")
 }
 func (UnimplementedAuthServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
@@ -439,8 +385,8 @@ func (UnimplementedAuthServiceServer) UpdateRole(context.Context, *UpdateRoleReq
 func (UnimplementedAuthServiceServer) DeleteRole(context.Context, *DeleteRoleRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRole not implemented")
 }
-func (UnimplementedAuthServiceServer) GetAllRoles(*GetAllRolesRequest, grpc.ServerStreamingServer[Role]) error {
-	return status.Errorf(codes.Unimplemented, "method GetAllRoles not implemented")
+func (UnimplementedAuthServiceServer) GetAllRoles(context.Context, *GetAllRolesRequest) (*RoleList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllRoles not implemented")
 }
 func (UnimplementedAuthServiceServer) AddRoleToUser(context.Context, *AddRoleToUserRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddRoleToUser not implemented")
@@ -448,11 +394,11 @@ func (UnimplementedAuthServiceServer) AddRoleToUser(context.Context, *AddRoleToU
 func (UnimplementedAuthServiceServer) RemoveRoleFromUser(context.Context, *RemoveRoleFromUserRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveRoleFromUser not implemented")
 }
-func (UnimplementedAuthServiceServer) GetRolesForUser(*GetRolesForUserRequest, grpc.ServerStreamingServer[Role]) error {
-	return status.Errorf(codes.Unimplemented, "method GetRolesForUser not implemented")
+func (UnimplementedAuthServiceServer) GetRolesForUser(context.Context, *GetRolesForUserRequest) (*RoleList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRolesForUser not implemented")
 }
-func (UnimplementedAuthServiceServer) GetRoleHierarchies(*GetRoleHierarchiesRequest, grpc.ServerStreamingServer[RoleHierarchy]) error {
-	return status.Errorf(codes.Unimplemented, "method GetRoleHierarchies not implemented")
+func (UnimplementedAuthServiceServer) GetRoleHierarchies(context.Context, *GetRoleHierarchiesRequest) (*RoleHierarchyList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRoleHierarchies not implemented")
 }
 func (UnimplementedAuthServiceServer) CreatePermission(context.Context, *CreatePermissionRequest) (*CreateOrUpdatePermissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePermission not implemented")
@@ -463,8 +409,8 @@ func (UnimplementedAuthServiceServer) UpdatePermission(context.Context, *UpdateP
 func (UnimplementedAuthServiceServer) DeletePermission(context.Context, *DeletePermissionRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePermission not implemented")
 }
-func (UnimplementedAuthServiceServer) GetAllPermissions(*GetAllPermissionsRequest, grpc.ServerStreamingServer[Permission]) error {
-	return status.Errorf(codes.Unimplemented, "method GetAllPermissions not implemented")
+func (UnimplementedAuthServiceServer) GetAllPermissions(context.Context, *GetAllPermissionsRequest) (*PermissionList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllPermissions not implemented")
 }
 func (UnimplementedAuthServiceServer) AddPermissionToRole(context.Context, *AddPermissionToRoleRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddPermissionToRole not implemented")
@@ -472,8 +418,8 @@ func (UnimplementedAuthServiceServer) AddPermissionToRole(context.Context, *AddP
 func (UnimplementedAuthServiceServer) RemovePermissionFromRole(context.Context, *RemovePermissionFromRoleRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemovePermissionFromRole not implemented")
 }
-func (UnimplementedAuthServiceServer) GetPermissionsForRole(*GetPermissionsForRoleRequest, grpc.ServerStreamingServer[Permission]) error {
-	return status.Errorf(codes.Unimplemented, "method GetPermissionsForRole not implemented")
+func (UnimplementedAuthServiceServer) GetPermissionsForRole(context.Context, *GetPermissionsForRoleRequest) (*PermissionList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPermissionsForRole not implemented")
 }
 func (UnimplementedAuthServiceServer) CheckPermissions(context.Context, *CheckPermissionsRequest) (*CheckPermissionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckPermissions not implemented")
@@ -589,16 +535,23 @@ func _AuthService_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_GetAllUsers_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(emptypb.Empty)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _AuthService_GetAllUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(AuthServiceServer).GetAllUsers(m, &grpc.GenericServerStream[emptypb.Empty, GetUserInfoResponse]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetAllUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetAllUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetAllUsers(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetAllUsersServer = grpc.ServerStreamingServer[GetUserInfoResponse]
 
 func _AuthService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteUserRequest)
@@ -672,16 +625,23 @@ func _AuthService_DeleteRole_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_GetAllRoles_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetAllRolesRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _AuthService_GetAllRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllRolesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(AuthServiceServer).GetAllRoles(m, &grpc.GenericServerStream[GetAllRolesRequest, Role]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetAllRoles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetAllRoles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetAllRoles(ctx, req.(*GetAllRolesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetAllRolesServer = grpc.ServerStreamingServer[Role]
 
 func _AuthService_AddRoleToUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddRoleToUserRequest)
@@ -719,27 +679,41 @@ func _AuthService_RemoveRoleFromUser_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_GetRolesForUser_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetRolesForUserRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _AuthService_GetRolesForUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRolesForUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(AuthServiceServer).GetRolesForUser(m, &grpc.GenericServerStream[GetRolesForUserRequest, Role]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetRolesForUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetRolesForUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetRolesForUser(ctx, req.(*GetRolesForUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetRolesForUserServer = grpc.ServerStreamingServer[Role]
-
-func _AuthService_GetRoleHierarchies_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetRoleHierarchiesRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _AuthService_GetRoleHierarchies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRoleHierarchiesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(AuthServiceServer).GetRoleHierarchies(m, &grpc.GenericServerStream[GetRoleHierarchiesRequest, RoleHierarchy]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetRoleHierarchies(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetRoleHierarchies_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetRoleHierarchies(ctx, req.(*GetRoleHierarchiesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetRoleHierarchiesServer = grpc.ServerStreamingServer[RoleHierarchy]
 
 func _AuthService_CreatePermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreatePermissionRequest)
@@ -795,16 +769,23 @@ func _AuthService_DeletePermission_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_GetAllPermissions_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetAllPermissionsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _AuthService_GetAllPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(AuthServiceServer).GetAllPermissions(m, &grpc.GenericServerStream[GetAllPermissionsRequest, Permission]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetAllPermissions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetAllPermissions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetAllPermissions(ctx, req.(*GetAllPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetAllPermissionsServer = grpc.ServerStreamingServer[Permission]
 
 func _AuthService_AddPermissionToRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddPermissionToRoleRequest)
@@ -842,16 +823,23 @@ func _AuthService_RemovePermissionFromRole_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_GetPermissionsForRole_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetPermissionsForRoleRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _AuthService_GetPermissionsForRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPermissionsForRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(AuthServiceServer).GetPermissionsForRole(m, &grpc.GenericServerStream[GetPermissionsForRoleRequest, Permission]{ServerStream: stream})
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetPermissionsForRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetPermissionsForRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetPermissionsForRole(ctx, req.(*GetPermissionsForRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AuthService_GetPermissionsForRoleServer = grpc.ServerStreamingServer[Permission]
 
 func _AuthService_CheckPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CheckPermissionsRequest)
@@ -899,6 +887,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_GetUserInfo_Handler,
 		},
 		{
+			MethodName: "GetAllUsers",
+			Handler:    _AuthService_GetAllUsers_Handler,
+		},
+		{
 			MethodName: "DeleteUser",
 			Handler:    _AuthService_DeleteUser_Handler,
 		},
@@ -915,12 +907,24 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_DeleteRole_Handler,
 		},
 		{
+			MethodName: "GetAllRoles",
+			Handler:    _AuthService_GetAllRoles_Handler,
+		},
+		{
 			MethodName: "AddRoleToUser",
 			Handler:    _AuthService_AddRoleToUser_Handler,
 		},
 		{
 			MethodName: "RemoveRoleFromUser",
 			Handler:    _AuthService_RemoveRoleFromUser_Handler,
+		},
+		{
+			MethodName: "GetRolesForUser",
+			Handler:    _AuthService_GetRolesForUser_Handler,
+		},
+		{
+			MethodName: "GetRoleHierarchies",
+			Handler:    _AuthService_GetRoleHierarchies_Handler,
 		},
 		{
 			MethodName: "CreatePermission",
@@ -935,6 +939,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_DeletePermission_Handler,
 		},
 		{
+			MethodName: "GetAllPermissions",
+			Handler:    _AuthService_GetAllPermissions_Handler,
+		},
+		{
 			MethodName: "AddPermissionToRole",
 			Handler:    _AuthService_AddPermissionToRole_Handler,
 		},
@@ -943,41 +951,14 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_RemovePermissionFromRole_Handler,
 		},
 		{
+			MethodName: "GetPermissionsForRole",
+			Handler:    _AuthService_GetPermissionsForRole_Handler,
+		},
+		{
 			MethodName: "CheckPermissions",
 			Handler:    _AuthService_CheckPermissions_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "GetAllUsers",
-			Handler:       _AuthService_GetAllUsers_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetAllRoles",
-			Handler:       _AuthService_GetAllRoles_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetRolesForUser",
-			Handler:       _AuthService_GetRolesForUser_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetRoleHierarchies",
-			Handler:       _AuthService_GetRoleHierarchies_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetAllPermissions",
-			Handler:       _AuthService_GetAllPermissions_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetPermissionsForRole",
-			Handler:       _AuthService_GetPermissionsForRole_Handler,
-			ServerStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "jwt-go-rbac/jwt-go-rbac.proto",
 }
