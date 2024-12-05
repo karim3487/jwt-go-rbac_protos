@@ -80,8 +80,10 @@ message UpdateUserRequest {
   int64 user_id = 1;
   string username = 2;
   string email = 3;
-  string first_name = 4;
-  string last_name = 5;
+  string password = 4;
+  string first_name = 5;
+  string last_name = 6;
+  bool is_active = 7;
 }
 
 message GetUserInfoRequest {
@@ -89,11 +91,16 @@ message GetUserInfoRequest {
 }
 
 message GetUserInfoResponse {
-  string username = 1;
-  string email = 2;
-  string first_name = 3;
-  string last_name = 4;
-  bool is_active = 5;
+  int64 id = 1;
+  string username = 2;
+  string email = 3;
+  string first_name = 4;
+  string last_name = 5;
+  bool is_active = 6;
+}
+
+message DeleteUserRequest {
+  int64 id = 1; // Идентификатор пользователя
 }
 
 // Requests and responses for role management
@@ -185,11 +192,13 @@ message CheckPermissionsResponse {
 
 service AuthService {
   // -------------------- USER MANAGEMENT -------------------------
-  rpc RegisterUser(RegisterUserRequest) returns (RegisterOrUpdateUserResponse);
+  rpc CreateUser(RegisterUserRequest) returns (GetUserInfoResponse);
+  rpc RegisterUser(RegisterUserRequest) returns (GetUserInfoResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
-  rpc UpdateUser(UpdateUserRequest) returns (RegisterOrUpdateUserResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (GetUserInfoResponse);
   rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse);
   rpc GetAllUsers(google.protobuf.Empty) returns (stream GetUserInfoResponse);
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
 
   // -------------------- ROLE MANAGEMENT -------------------------
   rpc CreateRole(CreateRoleRequest) returns (CreateOrUpdateRoleResponse);

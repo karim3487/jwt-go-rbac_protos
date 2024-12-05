@@ -20,11 +20,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	AuthService_CreateUser_FullMethodName               = "/auth.AuthService/CreateUser"
 	AuthService_RegisterUser_FullMethodName             = "/auth.AuthService/RegisterUser"
 	AuthService_Login_FullMethodName                    = "/auth.AuthService/Login"
 	AuthService_UpdateUser_FullMethodName               = "/auth.AuthService/UpdateUser"
 	AuthService_GetUserInfo_FullMethodName              = "/auth.AuthService/GetUserInfo"
 	AuthService_GetAllUsers_FullMethodName              = "/auth.AuthService/GetAllUsers"
+	AuthService_DeleteUser_FullMethodName               = "/auth.AuthService/DeleteUser"
 	AuthService_CreateRole_FullMethodName               = "/auth.AuthService/CreateRole"
 	AuthService_UpdateRole_FullMethodName               = "/auth.AuthService/UpdateRole"
 	AuthService_DeleteRole_FullMethodName               = "/auth.AuthService/DeleteRole"
@@ -48,11 +50,13 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
 	// -------------------- USER MANAGEMENT -------------------------
-	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterOrUpdateUserResponse, error)
+	CreateUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
+	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*RegisterOrUpdateUserResponse, error)
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
 	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
 	GetAllUsers(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetUserInfoResponse], error)
+	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// -------------------- ROLE MANAGEMENT -------------------------
 	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateOrUpdateRoleResponse, error)
 	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*CreateOrUpdateRoleResponse, error)
@@ -81,9 +85,19 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterOrUpdateUserResponse, error) {
+func (c *authServiceClient) CreateUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RegisterOrUpdateUserResponse)
+	out := new(GetUserInfoResponse)
+	err := c.cc.Invoke(ctx, AuthService_CreateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserInfoResponse)
 	err := c.cc.Invoke(ctx, AuthService_RegisterUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -101,9 +115,9 @@ func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 	return out, nil
 }
 
-func (c *authServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*RegisterOrUpdateUserResponse, error) {
+func (c *authServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RegisterOrUpdateUserResponse)
+	out := new(GetUserInfoResponse)
 	err := c.cc.Invoke(ctx, AuthService_UpdateUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -139,6 +153,16 @@ func (c *authServiceClient) GetAllUsers(ctx context.Context, in *emptypb.Empty, 
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AuthService_GetAllUsersClient = grpc.ServerStreamingClient[GetUserInfoResponse]
+
+func (c *authServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthService_DeleteUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
 
 func (c *authServiceClient) CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateOrUpdateRoleResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -350,11 +374,13 @@ func (c *authServiceClient) CheckPermissions(ctx context.Context, in *CheckPermi
 // for forward compatibility.
 type AuthServiceServer interface {
 	// -------------------- USER MANAGEMENT -------------------------
-	RegisterUser(context.Context, *RegisterUserRequest) (*RegisterOrUpdateUserResponse, error)
+	CreateUser(context.Context, *RegisterUserRequest) (*GetUserInfoResponse, error)
+	RegisterUser(context.Context, *RegisterUserRequest) (*GetUserInfoResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	UpdateUser(context.Context, *UpdateUserRequest) (*RegisterOrUpdateUserResponse, error)
+	UpdateUser(context.Context, *UpdateUserRequest) (*GetUserInfoResponse, error)
 	GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoResponse, error)
 	GetAllUsers(*emptypb.Empty, grpc.ServerStreamingServer[GetUserInfoResponse]) error
+	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
 	// -------------------- ROLE MANAGEMENT -------------------------
 	CreateRole(context.Context, *CreateRoleRequest) (*CreateOrUpdateRoleResponse, error)
 	UpdateRole(context.Context, *UpdateRoleRequest) (*CreateOrUpdateRoleResponse, error)
@@ -383,13 +409,16 @@ type AuthServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAuthServiceServer struct{}
 
-func (UnimplementedAuthServiceServer) RegisterUser(context.Context, *RegisterUserRequest) (*RegisterOrUpdateUserResponse, error) {
+func (UnimplementedAuthServiceServer) CreateUser(context.Context, *RegisterUserRequest) (*GetUserInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedAuthServiceServer) RegisterUser(context.Context, *RegisterUserRequest) (*GetUserInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
 }
 func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*RegisterOrUpdateUserResponse, error) {
+func (UnimplementedAuthServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*GetUserInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
 func (UnimplementedAuthServiceServer) GetUserInfo(context.Context, *GetUserInfoRequest) (*GetUserInfoResponse, error) {
@@ -397,6 +426,9 @@ func (UnimplementedAuthServiceServer) GetUserInfo(context.Context, *GetUserInfoR
 }
 func (UnimplementedAuthServiceServer) GetAllUsers(*emptypb.Empty, grpc.ServerStreamingServer[GetUserInfoResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method GetAllUsers not implemented")
+}
+func (UnimplementedAuthServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedAuthServiceServer) CreateRole(context.Context, *CreateRoleRequest) (*CreateOrUpdateRoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRole not implemented")
@@ -465,6 +497,24 @@ func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&AuthService_ServiceDesc, srv)
+}
+
+func _AuthService_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_CreateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).CreateUser(ctx, req.(*RegisterUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _AuthService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -549,6 +599,24 @@ func _AuthService_GetAllUsers_Handler(srv interface{}, stream grpc.ServerStream)
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AuthService_GetAllUsersServer = grpc.ServerStreamingServer[GetUserInfoResponse]
+
+func _AuthService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).DeleteUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_DeleteUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).DeleteUser(ctx, req.(*DeleteUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
 
 func _AuthService_CreateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateRoleRequest)
@@ -811,6 +879,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AuthServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "CreateUser",
+			Handler:    _AuthService_CreateUser_Handler,
+		},
+		{
 			MethodName: "RegisterUser",
 			Handler:    _AuthService_RegisterUser_Handler,
 		},
@@ -825,6 +897,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserInfo",
 			Handler:    _AuthService_GetUserInfo_Handler,
+		},
+		{
+			MethodName: "DeleteUser",
+			Handler:    _AuthService_DeleteUser_Handler,
 		},
 		{
 			MethodName: "CreateRole",
