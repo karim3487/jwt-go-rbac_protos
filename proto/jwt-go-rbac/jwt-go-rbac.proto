@@ -126,6 +126,7 @@ message UpdateRoleRequest {
   int64 role_id = 1;
   string name = 2;
   string description = 3;
+  repeated int64 parent_role_ids = 4;
 }
 
 message DeleteRoleRequest {
