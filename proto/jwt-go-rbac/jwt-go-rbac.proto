@@ -15,7 +15,8 @@ message Role {
   int64 id = 1;                     // Unique identifier for the role
   string name = 2;                  // Name of the role
   string description = 3;           // Description of the role
-  google.protobuf.Timestamp created_at = 4; // Creation date of the role
+  repeated int64 parent_role_ids = 4;
+  google.protobuf.Timestamp created_at = 5; // Creation date of the role
 }
 
 message RoleList {
