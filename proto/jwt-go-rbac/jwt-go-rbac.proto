@@ -43,7 +43,7 @@ message RoleHierarchy {
 }
 
 message RoleHierarchyList {
-  repeated RoleHierarchy rolesHierarchy = 1;
+  repeated RoleHierarchy rolesHierarchies = 1;
 }
 
 // Represents a permission in the system
@@ -115,6 +115,7 @@ message DeleteUserRequest {
 message CreateRoleRequest {
   string name = 1;
   string description = 2;
+  repeated int64 parent_role_ids = 3;
 }
 
 message CreateOrUpdateRoleResponse {
