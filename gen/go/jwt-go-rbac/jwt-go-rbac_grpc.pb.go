@@ -34,7 +34,6 @@ const (
 	AuthService_AddRoleToUser_FullMethodName            = "/auth.AuthService/AddRoleToUser"
 	AuthService_RemoveRoleFromUser_FullMethodName       = "/auth.AuthService/RemoveRoleFromUser"
 	AuthService_GetRolesForUser_FullMethodName          = "/auth.AuthService/GetRolesForUser"
-	AuthService_GetRoleHierarchies_FullMethodName       = "/auth.AuthService/GetRoleHierarchies"
 	AuthService_CreatePermission_FullMethodName         = "/auth.AuthService/CreatePermission"
 	AuthService_UpdatePermission_FullMethodName         = "/auth.AuthService/UpdatePermission"
 	AuthService_DeletePermission_FullMethodName         = "/auth.AuthService/DeletePermission"
@@ -65,7 +64,6 @@ type AuthServiceClient interface {
 	AddRoleToUser(ctx context.Context, in *AddRoleToUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RemoveRoleFromUser(ctx context.Context, in *RemoveRoleFromUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetRolesForUser(ctx context.Context, in *GetRolesForUserRequest, opts ...grpc.CallOption) (*RoleList, error)
-	GetRoleHierarchies(ctx context.Context, in *GetRoleHierarchiesRequest, opts ...grpc.CallOption) (*RoleHierarchyList, error)
 	// -------------------- PERMISSION MANAGEMENT -------------------
 	CreatePermission(ctx context.Context, in *CreatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error)
 	UpdatePermission(ctx context.Context, in *UpdatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error)
@@ -225,16 +223,6 @@ func (c *authServiceClient) GetRolesForUser(ctx context.Context, in *GetRolesFor
 	return out, nil
 }
 
-func (c *authServiceClient) GetRoleHierarchies(ctx context.Context, in *GetRoleHierarchiesRequest, opts ...grpc.CallOption) (*RoleHierarchyList, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RoleHierarchyList)
-	err := c.cc.Invoke(ctx, AuthService_GetRoleHierarchies_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *authServiceClient) CreatePermission(ctx context.Context, in *CreatePermissionRequest, opts ...grpc.CallOption) (*CreateOrUpdatePermissionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateOrUpdatePermissionResponse)
@@ -335,7 +323,6 @@ type AuthServiceServer interface {
 	AddRoleToUser(context.Context, *AddRoleToUserRequest) (*emptypb.Empty, error)
 	RemoveRoleFromUser(context.Context, *RemoveRoleFromUserRequest) (*emptypb.Empty, error)
 	GetRolesForUser(context.Context, *GetRolesForUserRequest) (*RoleList, error)
-	GetRoleHierarchies(context.Context, *GetRoleHierarchiesRequest) (*RoleHierarchyList, error)
 	// -------------------- PERMISSION MANAGEMENT -------------------
 	CreatePermission(context.Context, *CreatePermissionRequest) (*CreateOrUpdatePermissionResponse, error)
 	UpdatePermission(context.Context, *UpdatePermissionRequest) (*CreateOrUpdatePermissionResponse, error)
@@ -396,9 +383,6 @@ func (UnimplementedAuthServiceServer) RemoveRoleFromUser(context.Context, *Remov
 }
 func (UnimplementedAuthServiceServer) GetRolesForUser(context.Context, *GetRolesForUserRequest) (*RoleList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRolesForUser not implemented")
-}
-func (UnimplementedAuthServiceServer) GetRoleHierarchies(context.Context, *GetRoleHierarchiesRequest) (*RoleHierarchyList, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRoleHierarchies not implemented")
 }
 func (UnimplementedAuthServiceServer) CreatePermission(context.Context, *CreatePermissionRequest) (*CreateOrUpdatePermissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePermission not implemented")
@@ -697,24 +681,6 @@ func _AuthService_GetRolesForUser_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_GetRoleHierarchies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRoleHierarchiesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthServiceServer).GetRoleHierarchies(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AuthService_GetRoleHierarchies_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).GetRoleHierarchies(ctx, req.(*GetRoleHierarchiesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _AuthService_CreatePermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreatePermissionRequest)
 	if err := dec(in); err != nil {
@@ -921,10 +887,6 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRolesForUser",
 			Handler:    _AuthService_GetRolesForUser_Handler,
-		},
-		{
-			MethodName: "GetRoleHierarchies",
-			Handler:    _AuthService_GetRoleHierarchies_Handler,
 		},
 		{
 			MethodName: "CreatePermission",

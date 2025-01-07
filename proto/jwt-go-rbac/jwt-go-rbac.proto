@@ -15,7 +15,6 @@ message Role {
   int64 id = 1;                     // Unique identifier for the role
   string name = 2;                  // Name of the role
   string description = 3;           // Description of the role
-  repeated int64 parent_role_ids = 4;
   google.protobuf.Timestamp created_at = 5; // Creation date of the role
 }
 
@@ -34,17 +33,6 @@ message User {
   google.protobuf.Timestamp created_at = 7; // Registration date
   google.protobuf.Timestamp updated_at = 8; // Last update date
   bool is_active = 9;               // User's active status
-}
-
-// Represents a hierarchy of roles (parent-child relationship)
-message RoleHierarchy {
-  int64 id = 1;                     // Unique identifier for the hierarchy
-  Role parent_role = 2;             // Parent role in the hierarchy
-  Role child_role = 3;              // Child role in the hierarchy
-}
-
-message RoleHierarchyList {
-  repeated RoleHierarchy rolesHierarchies = 1;
 }
 
 // Represents a permission in the system
@@ -116,7 +104,6 @@ message DeleteUserRequest {
 message CreateRoleRequest {
   string name = 1;
   string description = 2;
-  repeated int64 parent_role_ids = 3;
 }
 
 message CreateOrUpdateRoleResponse {
@@ -127,7 +114,6 @@ message UpdateRoleRequest {
   int64 role_id = 1;
   string name = 2;
   string description = 3;
-  repeated int64 parent_role_ids = 4;
 }
 
 message DeleteRoleRequest {
@@ -224,7 +210,6 @@ service AuthService {
   rpc AddRoleToUser(AddRoleToUserRequest) returns (google.protobuf.Empty);
   rpc RemoveRoleFromUser(RemoveRoleFromUserRequest) returns (google.protobuf.Empty);
   rpc GetRolesForUser(GetRolesForUserRequest) returns (RoleList);
-  rpc GetRoleHierarchies(GetRoleHierarchiesRequest) returns (RoleHierarchyList);
 
   // -------------------- PERMISSION MANAGEMENT -------------------
   rpc CreatePermission(CreatePermissionRequest) returns (CreateOrUpdatePermissionResponse);
